@@ -280,6 +280,7 @@ class Arlo(object):
         Returns:
             JSON
         """
+        # TODO doesnt work because cant get custom modes yet
         return self._notify(device_id, xcloud_id, {"from": self._user_id+"_web",
                                                    "to": device_id,
                                                    "action": "set",
@@ -301,6 +302,7 @@ class Arlo(object):
         Returns:
             JSON
         """
+        # TODO doesnt work because cant get custom modes yet
         return self._notify(device_id, xcloud_id, {"from": self._user_id+"_web",
                                                    "to": device_id,
                                                    "action": "delete",
@@ -321,6 +323,7 @@ class Arlo(object):
         Returns:
             JSON
         """
+        # TODO need a test for this
         return self._notify(device_id, xcloud_id, {"from": self._user_id+"_web",
                                                    "to": device_id,
                                                    "action": "set",
@@ -461,7 +464,11 @@ class Arlo(object):
     @check_login
     def update_password(self, password):
         """
-        Update the user's password 
+        Update the user's password. Note that the password must conform
+        to Arlo's password rules, which as of time of writing are 6 to 128 characters,
+        at least 1 number, at least 1 upper case letter and 1 lower case letter,
+        no spaces, and only ! @ # $ % ^ & * ( ) as special characters.
+        If you do not follow the rules the request will fail.
 
         Args:
             password: string representing the user's new password
@@ -571,6 +578,7 @@ class Arlo(object):
         Returns:
             Byte data representing the video being streamed
         """
+        # TODO getting 400 as is
         body = self._post(self.base_url+'users/devices/startStream', {"from": self._user_id+"_web",
                                                                       "to": device_id,
                                                                       "action": "set",
