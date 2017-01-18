@@ -1,7 +1,6 @@
 """
 A package for interacting with Netgear's Arlo camera system via their API.
 """
-# TODO: finish docstrings
 ##
 # Copyright 2016 Jeffrey D. Walter
 # 
@@ -17,8 +16,6 @@ A package for interacting with Netgear's Arlo camera system via their API.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ##
-
-# 14 Sep 2016, Len Shustek:  Added Logout()
 import functools
 import logging
 
@@ -192,7 +189,6 @@ class Arlo(object):
         """
         return self._post(self.base_url+'users/devices/notify/'+device_id, body, headers={"xCloudId": xcloud_id})
 
-# TODO doesnt work
     @check_login
     def get_modes(self, device_id, xcloud_id):
         """
@@ -205,30 +201,31 @@ class Arlo(object):
         Returns:
             JSON
         """
-        print('get modes')
-        print(self._notify(device_id, xcloud_id, {"from": self._user_id+"_web",
-                                                  "to": device_id,
-                                                  "action": "get",
-                                                  "resource": "modes",
-                                                  "publishResponse": "false"
-                                                  }))
-        print('get schedule')
-        print(self._notify(device_id, xcloud_id, {"from": self._user_id+"_web",
-                                                  "to": device_id,
-                                                  "action": "get",
-                                                  "resource": "schedule",
-                                                  "publishResponse": "false"
-                                                  }))
-        print('subscribing')
-        print(self._get(self.base_url+'client/subscribe?token='+self.headers['Authorization']))
-        print('set subscription')
-        print(self._notify(device_id, xcloud_id, {"from": self._user_id+"_web",
-                                                  "to": device_id,
-                                                  "action": "set",
-                                                  "resource": "subscription/"+self._user_id+"_web",
-                                                  "publishResponse": "false",
-                                                  "properties": {"devices": [device_id]}
-                                                  }))
+        return
+        # print('get modes')
+        # print(self._notify(device_id, xcloud_id, {"from": self._user_id+"_web",
+        #                                           "to": device_id,
+        #                                           "action": "get",
+        #                                           "resource": "modes",
+        #                                           "publishResponse": "false"
+        #                                           }))
+        # print('get schedule')
+        # print(self._notify(device_id, xcloud_id, {"from": self._user_id+"_web",
+        #                                           "to": device_id,
+        #                                           "action": "get",
+        #                                           "resource": "schedule",
+        #                                           "publishResponse": "false"
+        #                                           }))
+        # print('subscribing')
+        # print(self._get(self.base_url+'client/subscribe?token='+self.headers['Authorization']))
+        # print('set subscription')
+        # print(self._notify(device_id, xcloud_id, {"from": self._user_id+"_web",
+        #                                           "to": device_id,
+        #                                           "action": "set",
+        #                                           "resource": "subscription/"+self._user_id+"_web",
+        #                                           "publishResponse": "false",
+        #                                           "properties": {"devices": [device_id]}
+        #                                           }))
 
     @check_login
     def arm(self, device_id, xcloud_id):
@@ -268,27 +265,6 @@ class Arlo(object):
                                                   "resource": "modes",
                                                   "publishResponse": "true",
                                                   "properties": {"active": "mode0"}
-                                                  })
-
-# TODO not sure what this actually does
-    @check_login
-    def schedule(self, device_id, xcloud_id):
-        """
-        Enable Schedule mode
-
-        Args:
-            device_id: The ID of the device being targeted, obtained from get_devices()
-            xcloud_id: The xcloud_id obtained from get_devices(). Seems to be the same across all devices
-
-        Returns:
-            JSON
-        """
-        return self._notify(device_id, xcloud_id, {"from": self._user_id+"_web",
-                                                  "to": device_id,
-                                                  "action": "set",
-                                                  "resource": "schedule",
-                                                  "publishResponse": "true",
-                                                  "properties": {"active": "true"}
                                                   })
 
     @check_login
@@ -355,7 +331,8 @@ class Arlo(object):
 
     @check_login
     def reset(self):
-# TODO what is this?
+    # TODO what is this?
+    # when you delete a bunch of videos this gets called
         """
         Reset <WHAT>
 
@@ -451,6 +428,21 @@ class Arlo(object):
             JSON
         """
         return self._post(self.base_url+'users/library/metadata', {'dateFrom': from_date, 'dateTo': to_date})
+    
+    @check_login
+    def get_library(self, from_date, to_date):
+        """
+        Retrieves all videos in the library between the specified dates. Note that the presignedContentUrl
+        is a link to the actual video, and the presignedThumbnailUrl is a link the thumbnail
+
+        Args:
+            from_date: string following the format %Y%m%d, as in 20160907
+            to_date: string following the format %Y%m%d, as in 20160907
+
+        Returns:
+            JSON
+        """
+        return self._post(self.base_url+'users/library', {'dateFrom': from_date, 'dateTo': to_date})
 
     @check_login
     def update_profile(self, first_name, last_name):
@@ -536,134 +528,59 @@ class Arlo(object):
         """
         return self._post(self.base_url+'users/devices/displayOrder', body)
 
-# TODO: combine with get_library_metadata
     @check_login
-    def get_library(self, from_date, to_date):
+    def delete_recordings(self, recordings):
         """
-        Retrieves all videos in the library between the specified dates. Note that the presignedContentUrl
-        is a link to the actual video, and the presignedThumbnailUrl is a link the thumbnail
+        Delete recording(s) from the library
 
         Args:
-            from_date: string following the format %Y%m%d, as in 20160907
-            to_date: string following the format %Y%m%d, as in 20160907
+            recordings: A list containing dictionaries of the form
+            {"createdDate": "20160904","utcCreatedDate": 1473010280395,"deviceId": "XXXXXXXXXXXXX"}
 
         Returns:
             JSON
         """
-        return self._post(self.base_url+'users/library', {'dateFrom': from_date, 'dateTo': to_date})
+        return self._post(self.base_url+'users/library/recycle', {'data': recordings})
 
-    ##
-    # Delete a single video recording from Arlo.
-    #
-    # All of the date info and device id you need to pass into this method are given in the results of the GetLibrary() call.
-    #
-    ##
     @check_login
-    def delete_recording(self, created_date, utc_created_date, device_id):
+    def get_recording(self, url, filename):
         """
-        Delete the specified recording using the creation date and ID of the device that recorded it
+        Download the specified video based on its presignedContentUrl and save it to disk
 
         Args:
-            created_date: datetime.datetime object representing the creation date
-            utc_created_date: TODO probably not needed as an arg since datetime can convert
+            url: The video's presignedContentUrl
+            filename: The file to save the video to
+
+        Returns:
+            None
+        """
+        r = requests.get(url, stream=True)
+        r.raise_for_status()
+        with open(filename, 'wb') as fd:
+            for chunk in r.iter_content(): 
+                fd.write(chunk)
+
+    @check_login
+    def stream_recording(self, device_id):
+        """
+        A generator for streaming data from the specified camera
+
+        Args:
             device_id: The ID of the device being targeted, obtained from get_devices()
 
         Returns:
-            JSON
+            Byte data representing the video being streamed
         """
-        return self._post(self.base_url+'users/library/recycle', {'data': [{'createdDate': created_date,'utcCreatedDate': utc_created_date,'deviceId': device_id}]})
-
-    ##
-    # Delete a batch of video recordings from Arlo.
-    #
-    # The GetLibrary() call response json can be passed directly to this method if you'd like to delete the same list of videos you queried for.
-    # If you want to delete some other batch of videos, then you need to send an array of objects representing each video you want to delete.
-    #
-    #[  
-    #  {  
-    #    "createdDate": "20160904",
-    #    "utcCreatedDate": 1473010280395,
-    #    "deviceId": "XXXXXXXXXXXXX"
-    #  },
-    #  {  
-    #    "createdDate": "20160904",
-    #    "utcCreatedDate": 1473010280395,
-    #    "deviceId": "XXXXXXXXXXXXX"
-    #  }
-    #]
-    ##
-# TODO: should this just call delete_recording for each one?
-# TODO: or should this only exist and single recordings
-    @check_login
-    def batch_delete_recordings(self, recording_metadata):
-        """
-        Delete multiple recordings at once
-
-        Args:
-            recording_metadata:
-
-        Returns:
-            JSON
-        """
-        return self._post(self.base_url+'users/library/recycle', {'data': recording_metadata})
-
-    ##
-    # Returns the whole video from the presignedContentUrl. 
-    #
-    # Obviously, this function is generic and could be used to download anything. : )
-    ##
-    @check_login
-    def get_recording(self, url, chunk_size=4096):
-# TODO docstring
-        video = ''
-        r = requests.get(url, stream=True)
+        body = self._post(self.base_url+'users/devices/startStream', {"from": self._user_id+"_web",
+                                                                      "to": device_id,
+                                                                      "action": "set",
+                                                                      "resource": "cameras/"+device_id,
+                                                                      "publishResponse": "true",
+                                                                      "properties": {"activityState": "startPositionStream"}
+                                                                        #  "transId": "web!XXXXXXXX.XXXXXXXXXXXXXXXXXXXX",
+                                                                      })
+        r = requests.get(body['data']['url'], stream=True)
         r.raise_for_status()
-
-        for chunk in r.iter_content(chunk_size): 
-            if chunk:
-                video += chunk 
-        return video
-
-    ##
-    # Returns a generator that is the chunked video stream from the presignedContentUrl. 
-    #
-    # Obviously, this function is generic and could be used to download anything. : )
-    ##
-    @check_login
-    def stream_recording(self, url, chunk_size=4096):
-# TODO docstring
-        r = requests.get(url, stream=True)
-        r.raise_for_status()
-        for chunk in r.iter_content(chunk_size):
-            yield chunk
-    ##
-    # This function returns a generator that is a chunked live video stream.
-    #
-    # To initiate a stream pass the following: 
-    #{
-    #  "to": "XXXXXXXXXXXXX",
-    #  "from": "XXX-XXXXXXX_web",
-    #  "resource": "cameras/XXXXXXXXXXXXX",
-    #  "action": "set",
-    #  "publishResponse": true,
-    #  "transId": "web!XXXXXXXX.XXXXXXXXXXXXXXXXXXXX",
-    #  "properties": {
-    #      "activityState": "startPositionStream"
-    #  }
-    #}
-    # The request to /users/devices/startStream returns: 
-    #{
-    #  "data": {
-    #    "url": "rtmps://vzwow09-z2-prod.vz.netgear.com: 80/vzmodulelive?egressToken=b1b4b675_ac03_4182_9844_043e02a44f71&userAgent=web&cameraId=48B4597VD8FF5_1473010750131"
-    #  },
-    #  "success": true
-    #}
-    # which is the url of the video stream, which this function then uses to call StreamRecording().
-    ##
-    @check_login
-    def start_stream(self, body):
-# TODO docstring
-        body = self._post(self.base_url+'users/devices/startStream', body)
-        for chunk in self.stream_recording(body['url']):
+        for chunk in r.iter_content():
             yield chunk 
 
