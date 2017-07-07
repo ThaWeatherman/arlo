@@ -568,25 +568,31 @@ class Arlo(object):
                 fd.write(chunk)
 
     @check_login
-    def stream_recording(self, device_id):
+    def stream_recording(self, device_id, parent_id):
         """
         A generator for streaming data from the specified camera
 
         Args:
             device_id: The ID of the device being targeted, obtained from get_devices()
+            parent_id: The ID of the device's parent. If this is for a Q, this is the same
+            as device_id. Otherwise, the parent_id should be that of the base station.
 
         Returns:
             Byte data representing the video being streamed
         """
         # TODO getting 400 as is
         body = self._post(self.base_url+'users/devices/startStream', {"from": self._user_id+"_web",
-                                                                      "to": device_id,
+                                                                      "to": parent_id,
                                                                       "action": "set",
                                                                       "resource": "cameras/"+device_id,
                                                                       "publishResponse": "true",
-                                                                      "properties": {"activityState": "startPositionStream"}
+                                                                      "properties": {
+                                                                          "activityState": "startUserStream",
+                                                                          "cameraId": device_id
+                                                                          }
                                                                         #  "transId": "web!XXXXXXXX.XXXXXXXXXXXXXXXXXXXX",
                                                                       })
+        print(body['data']['url'])
         r = requests.get(body['data']['url'], stream=True)
         r.raise_for_status()
         for chunk in r.iter_content():
